@@ -30,7 +30,12 @@ class ListaAtomica {
     }
 
     void insertar(const T &valor) {
-        // Completar (Ejercicio 1)
+        // Solo un thread debería insertar a la vez
+        std::atomic<Nodo *> nuevoNodo(valor);
+        Nodo* n = nuevoNodo.load();
+        n->_siguiente = _cabeza.load();
+        nuevoNodo.store(n);
+        _cabeza.store(nuevoNodo);
     }
 
     T& operator[](size_t i) const {
@@ -51,6 +56,7 @@ class ListaAtomica {
         return cant;
     }
 
+
     struct iterator {
     private:
         ListaAtomica *_lista;
@@ -68,7 +74,8 @@ class ListaAtomica {
         }
 
         T& operator*() {
-            return _nodo_sig->_valor;
+            // Lo pasamos a referencia para poder actualizarlo
+            return &_nodo_sig->_valor;
         }
 
         iterator& operator++() { 
@@ -101,6 +108,14 @@ class ListaAtomica {
 
     iterator end() { 
         return iterator(this, nullptr);
+    }
+
+    iterator buscar(const T &clave){
+        iterador res = this->begin;
+        while (res != this.end() && res* != clave){
+            res++;
+        }
+        return res;
     }
 };
 

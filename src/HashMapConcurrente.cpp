@@ -11,6 +11,8 @@
 HashMapConcurrente::HashMapConcurrente() {
     for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
         tabla[i] = new ListaAtomica<hashMapPair>();
+        // Arrancamos los semaforos desbloqueados
+        _semaforos[i] = new mutex();
     }
 }
 
@@ -19,11 +21,28 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 }
 
 void HashMapConcurrente::incrementar(std::string clave) {
-    // Completar (Ejercicio 2)
+    unsigned int idx = hashIndex(clave);
+    _semaforos[idx].lock();
+
+    ListaAtomica<hashMapPair>::iterator it_clave = tabla[i].buscar(clave);
+    if (it_clave == tabla[i].end()){
+        hashMapPair nuevoPar = make_pair(clave, 1);
+        tabla[i].insertar(nuevoPar);
+    } else {
+        it_clave*.second()++;
+    }
+
+    _semaforos[idx].unlock();
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {
-    // Completar (Ejercicio 2)
+    std::vector<std::string> res;
+    for (int i = 0; i < tabla.size(); i++){
+        for (ListaAtomica<hashMapPair>::iterator it_actual = tabla[i].begin(); i != tabla[i].end(); it_actual++){
+            res.push_back(it_actual*.first());
+        }
+    }
+    return res;
 }
 
 unsigned int HashMapConcurrente::valor(std::string clave) {
