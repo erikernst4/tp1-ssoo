@@ -29,7 +29,7 @@ class HashMapConcurrente {
 
     static unsigned int hashIndex(std::string clave);
 
-    std::mutex _semaforos[HashMapConcurrente::cantLetras];
+    std::mutex* _semaforos[HashMapConcurrente::cantLetras];
 };
 
 #endif  /* HMC_HPP */

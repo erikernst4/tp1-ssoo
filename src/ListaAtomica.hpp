@@ -8,10 +8,11 @@ template<typename T>
 class ListaAtomica {
  private:
     struct Nodo {
-        Nodo(const T &val) : _valor(val), _siguiente(nullptr) {}
+        Nodo(const T &val) : _valor(val), _siguiente(nullptr), _llave() {}
 
         T _valor;
         Nodo *_siguiente;
+        std::mutex _llave;
     };
 
     std::atomic<Nodo *> _cabeza;
@@ -30,12 +31,14 @@ class ListaAtomica {
     }
 
     void insertar(const T &valor) {
-        // Solo un thread debería insertar a la vez
+        // No sabemos si es correcto el uso del mutex.
         std::atomic<Nodo *> nuevoNodo(valor);
         Nodo* n = nuevoNodo.load();
+        _llave.lock();
         n->_siguiente = _cabeza.load();
         nuevoNodo.store(n);
         _cabeza.store(nuevoNodo);
+        _llave.unlock();
     }
 
     T& operator[](size_t i) const {
@@ -74,8 +77,7 @@ class ListaAtomica {
         }
 
         T& operator*() {
-            // Lo pasamos a referencia para poder actualizarlo
-            return &_nodo_sig->_valor;
+            return _nodo_sig->_valor;
         }
 
         iterator& operator++() { 

@@ -12,7 +12,7 @@ HashMapConcurrente::HashMapConcurrente() {
     for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
         tabla[i] = new ListaAtomica<hashMapPair>();
         // Arrancamos los semaforos desbloqueados
-        _semaforos[i] = new mutex();
+        _semaforos[i] = new std::mutex();
     }
 }
 
@@ -22,24 +22,26 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 
 void HashMapConcurrente::incrementar(std::string clave) {
     unsigned int idx = hashIndex(clave);
-    _semaforos[idx].lock();
+    _semaforos[idx]->lock();
 
-    ListaAtomica<hashMapPair>::iterator it_clave = tabla[i].buscar(clave);
-    if (it_clave == tabla[i].end()){
+    unsigned int valor = this->valor(clave);
+
+    if (valor == 0){
         hashMapPair nuevoPar = make_pair(clave, 1);
-        tabla[i].insertar(nuevoPar);
+        tabla[idx]->insertar(nuevoPar);
     } else {
-        it_clave*.second()++;
+        ListaAtomica<hashMapPair>::iterator it_clave = tabla[idx]->buscar(make_pair(clave,valor));
+        *it_clave = make_pair(clave,valor+1);
     }
 
-    _semaforos[idx].unlock();
+    _semaforos[idx]->unlock();
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {
-    std::vector<std::string> res;
-    for (int i = 0; i < tabla.size(); i++){
-        for (ListaAtomica<hashMapPair>::iterator it_actual = tabla[i].begin(); i != tabla[i].end(); it_actual++){
-            res.push_back(it_actual*.first());
+    std::vector<std::string> res(0);
+    for (int i = 0; i < cantLetras; i++){
+        for (ListaAtomica<hashMapPair>::iterator it_actual = tabla[i]->begin(); it_actual != tabla[i]->end(); it_actual++){
+            res.push_back((*it_actual).first);
         }
     }
     return res;
