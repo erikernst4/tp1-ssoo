@@ -48,7 +48,13 @@ std::vector<std::string> HashMapConcurrente::claves() {
 }
 
 unsigned int HashMapConcurrente::valor(std::string clave) {
-    // Completar (Ejercicio 2)
+    ListaAtomica<hashMapPair> * listaDicc = tabla[hashIndex(clave)];
+    for (ListaAtomica<hashMapPair>::iterator it = listaDicc->begin(); it != listaDicc->end(); it++){
+        if((*it).first == clave){
+            return (*it).second;
+        }
+    }
+    return 0;
 }
 
 hashMapPair HashMapConcurrente::maximo() {
