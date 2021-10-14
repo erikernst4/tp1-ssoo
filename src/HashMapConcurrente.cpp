@@ -61,6 +61,10 @@ hashMapPair HashMapConcurrente::maximo() {
     hashMapPair *max = new hashMapPair();
     max->second = 0;
 
+    for(int i =0; i<cantLetras; i++){
+        _semaforos[i]->lock();
+    }
+
     for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
         for (auto &p : *tabla[index]) {
             if (p.second > max->second) {
@@ -70,13 +74,38 @@ hashMapPair HashMapConcurrente::maximo() {
         }
     }
 
+    for(int i =0; i<cantLetras; i++){
+        _semaforos[i]->unlock();
+    }
+
     return *max;
 }
 
 
 
 hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
-    // Completar (Ejercicio 3)
+    if(cant_threads > cantLetras)throw("invalid input");
+    hashMapPair *max = new hashMapPair();
+    max->second = 0;
+    std::atomic<int> proximaFila(0);
+    std::mutex puedoActualizarMax; // Esta sin inicializar pero cuando lo construyo me tira error
+    for(unsigned int i = 0; i < cant_threads; i++){
+        std::thread t = std::thread(maximoAux(&proximaFila, &puedoActualizarMax, max));
+    }
 }
+hashMapPair HashMapConcurrente::maximoAux(std::atomic<int>* proximaFila, std::mutex* puedoActualizarMax, hashMapPair* max){
+    int Numfila(0);
+    while(true){
+        Numfila = proximaFila->fetch_add(1);
+        if(Numfila >= cantLetras)break;
+        for (auto &p : *tabla[Numfila]) {
+            if (p.second > max->second) {
+                max->first = p.first;
+                max->second = p.second;
+            }
+        }
+    }
+}
+
 
 #endif

@@ -30,6 +30,8 @@ class HashMapConcurrente {
     static unsigned int hashIndex(std::string clave);
 
     std::mutex* _semaforos[HashMapConcurrente::cantLetras];
+
+    hashMapPair maximoAux(std::atomic<int> * proximaFila,std::mutex* puedoActualizarMax, hashMapPair* max);
 };
 
 #endif  /* HMC_HPP */
