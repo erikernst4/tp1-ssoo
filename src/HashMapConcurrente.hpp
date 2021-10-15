@@ -31,6 +31,8 @@ class HashMapConcurrente {
 
     std::mutex* _semaforos[HashMapConcurrente::cantLetras];
 
+    std::mutex* _puedoIncrementar;
+
     hashMapPair maximoAux(std::atomic<int> * proximaFila,std::mutex* puedoActualizarMax, hashMapPair* max);
 };
 
