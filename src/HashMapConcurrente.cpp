@@ -14,8 +14,6 @@ HashMapConcurrente::HashMapConcurrente() {
         // Arrancamos los semaforos desbloqueados
         _semaforos[i] = new std::mutex();
     }
-
-    _puedoIncrementar = new std::mutex();
 }
 
 unsigned int HashMapConcurrente::hashIndex(std::string clave) {
@@ -24,9 +22,6 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 
 void HashMapConcurrente::incrementar(std::string clave) {
     unsigned int idx = hashIndex(clave);
-    
-    _puedoIncrementar.lock();
-    _puedoIncrementar.unlock();
 
     _semaforos[idx]->lock();
 
@@ -67,9 +62,8 @@ hashMapPair HashMapConcurrente::maximo() {
     hashMapPair *max = new hashMapPair();
     max->second = 0;
 
-    _puedoIncrementar.lock();
-
     for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
+        this->_semaforos[index]->lock();
         for (auto &p : *tabla[index]) {
             if (p.second > max->second) {
                 max->first = p.first;
@@ -77,8 +71,9 @@ hashMapPair HashMapConcurrente::maximo() {
             }
         }
     }
-
-    _puedoIncrementar.unlock();
+    for(auto s:_semaforos){
+        s->unlock();
+    }
 
     return *max;
 }
@@ -94,7 +89,7 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     hashMapPair maxFila[cantLetras];
 
     for(unsigned int i = 0; i < cant_threads; i++){
-        std::thread t = std::thread(maximoAux(&proximaFila, &puedoActualizarMax, max));
+        std::thread t = std::thread(maximoAux(&proximaFila, maxFila));
         hilos[i] = &t;
     }
 
@@ -104,7 +99,7 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
 
     hashMapPair res = maxFila[0];
     for(int i = 0; i < cantLetras; i ++){
-        if (maxFila[i].second > res->second) {
+        if (maxFila[i].second > res.second) {
                 res = maxFila[i];
         }
     }
@@ -115,7 +110,7 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
 hashMapPair HashMapConcurrente::maximoAux(std::atomic<int>* proximaFila, hashMapPair maxFila[]){
     int filaActual(0);
 
-    while(filaActual >= cantLetras){
+    while(filaActual < cantLetras){
         filaActual = proximaFila->fetch_add(1);
         hashMapPair *max = new hashMapPair();
         max->second = 0;
