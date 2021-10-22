@@ -31,6 +31,6 @@ class HashMapConcurrente {
 
     std::mutex* _semaforos[HashMapConcurrente::cantLetras];
 
-   hashMapPair HashMapConcurrente::maximoAux(std::atomic<int>* proximaFila, hashMapPair maxFila[]);
+   hashMapPair HashMapConcurrente::maximoAux(std::atomic<int>* proximaFila, hashMapPair maxFila[], std::mutex &semaforo);
 };
 #endif  /* HMC_HPP */
