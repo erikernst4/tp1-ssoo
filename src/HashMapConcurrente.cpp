@@ -5,6 +5,7 @@
 // alternativamente #include <pthread.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "HashMapConcurrente.hpp"
 
@@ -86,11 +87,12 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     std::thread* hilos[cant_threads];
 
     std::atomic<int> proximaFila(0);    
-    hashMapPair maxFila[cantLetras];
+    std::vector<hashMapPair> maxFila(cantLetras);
     std::mutex sem();
 
     for(unsigned int i = 0; i < cant_threads; i++){
-        std::thread t = std::thread(maximoAux, &proximaFila, maxFila, sem);
+        //std::thread t = std::thread(&HashMapConcurrente::maximoAux,this, std::ref(proximaFila), std::ref(maxFila), std::ref(sem));
+        std::thread t = std::thread(&HashMapConcurrente::test,this);
         hilos[i] = &t;
     }
 
@@ -108,18 +110,18 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     return res;
 
 }
-hashMapPair HashMapConcurrente::maximoAux(std::atomic<int>* proximaFila, hashMapPair maxFila[], std::mutex &semaforo){
+void HashMapConcurrente::maximoAux(std::atomic<int>& proximaFila, std::vector<hashMapPair>& maxFila, std::mutex& semaforo){
     int filaActual(0);
 
     while(1){
         semaforo.lock();
-        if(proximaFila->load() >= cantLetras) break;
-        filaActual = proximaFila->fetch_add(1);
+        if(proximaFila.load() >= cantLetras) break;
+        filaActual = proximaFila.fetch_add(1);
         semaforo.unlock();
         hashMapPair *max = new hashMapPair();
         max->second = 0;
         
-        for (auto &p : *tabla[filaActual]) {
+        for (auto &p : *(this->tabla[filaActual])) {
             if (p.second > max->second) {
                 max->first = p.first;
                 max->second = p.second;
@@ -128,6 +130,10 @@ hashMapPair HashMapConcurrente::maximoAux(std::atomic<int>* proximaFila, hashMap
         maxFila[filaActual] = *max;
     }
 
+}
+
+void HashMapConcurrente::test(){
+    std::cout << "Hola!" << std::endl;
 }
 
 

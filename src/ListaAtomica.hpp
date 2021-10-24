@@ -8,11 +8,10 @@ template<typename T>
 class ListaAtomica {
  private:
     struct Nodo {
-        Nodo(const T &val) : _valor(val), _siguiente(nullptr), _llave() {}
+        Nodo(const T &val) : _valor(val), _siguiente(nullptr) {}
 
         T _valor;
         Nodo *_siguiente;
-        std::mutex _llave;
     };
 
     std::atomic<Nodo *> _cabeza;
@@ -31,15 +30,11 @@ class ListaAtomica {
     }
 
     void insertar(const T &valor) {
-        // No sabemos si es correcto el uso del mutex.
-        std::atomic<Nodo *> nuevoNodo(valor);
-        Nodo* n = nuevoNodo.load();
-        _llave.lock();
-        n->_siguiente = _cabeza.load();
-        nuevoNodo.store(n);
-        _cabeza.store(nuevoNodo);
-        _llave.unlock();
-    }
+        Nodo* nuevoNodo = new Nodo(valor);
+        nuevoNodo->_siguiente = _cabeza.load();
+        while(!_cabeza.compare_exchange_weak(nuevoNodo->_siguiente,nuevoNodo)); // intenta hacer el exchange hasta que de true nuevoNodo->siguiente == cabeza
+    }                                                                      // cuando la comparacion da false, en nuevoNodo->siguiente queda lo que habia en cabeza
+
 
     T& operator[](size_t i) const {
         Nodo *n = _cabeza.load();
@@ -113,8 +108,8 @@ class ListaAtomica {
     }
 
     iterator buscar(const T &clave){
-        iterador res = this->begin;
-        while (res != this.end() && res* != clave){
+        iterator res = this->begin();
+        while (res != this->end() && *res != clave){
             res++;
         }
         return res;
