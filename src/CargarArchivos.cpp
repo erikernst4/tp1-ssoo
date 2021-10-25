@@ -48,11 +48,10 @@ void cargarMultiplesArchivos(
     if(cantThreads > filePaths.size())throw("invalid input");
 
     std::thread* hilos[cantThreads];
-    int proximoArchivo = 0;
-    std::mutex semaforo();
-
+    std::atomic<unsigned int> proximoArchivo(0);
+    
     for(unsigned int i = 0; i < cantThreads; i++){
-        std::thread t = std::thread(cargarMultiplesArchivosAux,hashMap,filePaths,&proximoArchivo,&semaforo);
+        std::thread t(cargarMultiplesArchivosAux,std::ref(hashMap),std::ref(filePaths),std::ref(proximoArchivo));
         hilos[i] = &t;
     }
 
@@ -66,16 +65,14 @@ void cargarMultiplesArchivos(
     while(proximoArchivo.load() < filePaths.size()){
         archivoActual = proximoArchivo.fetch_add(1);
         cargarArchivo(hashMap,filePaths[proximoArchivo]);
-    }
+    }s
 }*/
 
-void cargarMultiplesArchivosAux(HashMapConcurrente &hashMap, std::vector<std::string>& filePaths, int * proximoArchivo, std::mutex &semaforo){
+void cargarMultiplesArchivosAux(HashMapConcurrente& hashMap, std::vector<std::string>& filePaths, std::atomic<unsigned int>& proximoArchivo){
     while(1){
-        semaforo.lock();
-        if(*proximoArchivo >= filePaths.size()){break;}
-        (*proximoArchivo) ++;
-        semaforo.unlock();
-        cargarArchivo(hashMap,filePaths[*proximoArchivo]);
+        unsigned int archivoActual = proximoArchivo.fetch_add(1);
+        if(archivoActual >= filePaths.size())break;
+        cargarArchivo(hashMap,filePaths[archivoActual]);
     }
 }
 

@@ -60,23 +60,20 @@ unsigned int HashMapConcurrente::valor(std::string clave) {
 }
 
 hashMapPair HashMapConcurrente::maximo() {
-    hashMapPair *max = new hashMapPair();
-    max->second = 0;
+    hashMapPair res{"",0};
 
     for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
         this->_semaforos[index]->lock();
         for (auto &p : *tabla[index]) {
-            if (p.second > max->second) {
-                max->first = p.first;
-                max->second = p.second;
+            if (p.second > res.second) {
+                res = p;
             }
         }
     }
     for(auto s:_semaforos){
         s->unlock();
     }
-
-    return *max;
+    return res;
 }
 
 
@@ -88,11 +85,9 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
 
     std::atomic<int> proximaFila(0);    
     std::vector<hashMapPair> maxFila(cantLetras);
-    std::mutex sem();
 
     for(unsigned int i = 0; i < cant_threads; i++){
-        //std::thread t = std::thread(&HashMapConcurrente::maximoAux,this, std::ref(proximaFila), std::ref(maxFila), std::ref(sem));
-        std::thread t = std::thread(&HashMapConcurrente::test,this);
+        std::thread t(&HashMapConcurrente::maximoAux,this,std::ref(proximaFila), std::ref(maxFila));
         hilos[i] = &t;
     }
 
@@ -110,17 +105,12 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     return res;
 
 }
-void HashMapConcurrente::maximoAux(std::atomic<int>& proximaFila, std::vector<hashMapPair>& maxFila, std::mutex& semaforo){
-    int filaActual(0);
-
+void HashMapConcurrente::maximoAux(std::atomic<int>& proximaFila, std::vector<hashMapPair>& maxFila){
     while(1){
-        semaforo.lock();
-        if(proximaFila.load() >= cantLetras) break;
-        filaActual = proximaFila.fetch_add(1);
-        semaforo.unlock();
+        int filaActual = proximaFila.fetch_add(1);
+        if(filaActual >= cantLetras) break;
         hashMapPair *max = new hashMapPair();
         max->second = 0;
-        
         for (auto &p : *(this->tabla[filaActual])) {
             if (p.second > max->second) {
                 max->first = p.first;
@@ -128,13 +118,9 @@ void HashMapConcurrente::maximoAux(std::atomic<int>& proximaFila, std::vector<ha
             }
         }
         maxFila[filaActual] = *max;
+        delete max;
     }
 
 }
-
-void HashMapConcurrente::test(){
-    std::cout << "Hola!" << std::endl;
-}
-
 
 #endif

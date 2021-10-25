@@ -19,6 +19,6 @@ void cargarMultiplesArchivos(
     std::vector<std::string> filePaths
 );
 
-void cargarMultiplesArchivosAux(HashMapConcurrente &hashMap, std::vector<std::string>& filePaths, int * proximoArchivo, std::mutex &semaforo);
+void cargarMultiplesArchivosAux(HashMapConcurrente &hashMap, std::vector<std::string>& filePaths, std::atomic<unsigned int>& proximoArchivo);
 
 #endif /* HMC_ARCHIVOS_HPP */
