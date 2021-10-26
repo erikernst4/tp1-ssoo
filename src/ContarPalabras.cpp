@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include <cstdio>
+#include <cstdlib>
 #include "HashMapConcurrente.hpp"
 #include "CargarArchivos.hpp"
 #include <chrono>
@@ -22,34 +23,28 @@ int main(int argc, char **argv) {
             << "Archivos a procesar." << std::endl;
         return 1;
     }
-    bool hacermaximo = argv[2] == "true";
 
-    int cantThreadsLectura = std::stoi(argv[1]);
-    int cantThreadsMaximo;
-    int comienzo;
-    if(hacermaximo){
-        cantThreadsMaximo =  std::stoi(argv[3]);
-        comienzo = 4;
-    }else{
-        comienzo = 3;
-    }
+    std::string hacerMaximo = argv[2];
+
+    int cantThreads = std::stoi(argv[1]);
+    
     std::vector<std::string> filePaths = {};
-    for (int i = comienzo; i < argc; i++) {
+    for (int i = 3; i < argc; i++) {
         filePaths.push_back(argv[i]);
     }
 
     HashMapConcurrente hashMap{}; // = HashMapConcurrente();
     auto start_multiples_archivos = std::chrono::steady_clock::now();
-    cargarMultiplesArchivos(hashMap, cantThreadsLectura, filePaths);
+    cargarMultiplesArchivos(hashMap, cantThreads, filePaths);
     auto end_multiples_archivos = std::chrono::steady_clock::now();
-    auto tiempo_multiples_archivos = start_multiples_archivos - end_multiples_archivos;
-    std::cout << tiempo_multiples_archivos.count() << std::endl;
-    if(hacermaximo){
+    double tiempo_multiples_archivos = std::chrono::duration<double, std::milli>(end_multiples_archivos -  start_multiples_archivos).count();
+    std::clog << tiempo_multiples_archivos << std::endl;
+    if(hacerMaximo == "true"){
         auto start_maximo_paralelo = std::chrono::steady_clock::now();
-        auto maximo = hashMap.maximoParalelo(cantThreadsMaximo);
+        auto maximo = hashMap.maximoParalelo(cantThreads);
         auto end_maximo_paralelo = std::chrono::steady_clock::now();
-        auto tiempo_maximo_paralelo = start_maximo_paralelo - end_maximo_paralelo;
-        std::cout << tiempo_maximo_paralelo.count() << std::endl;
+        double tiempo_maximo_paralelo = std::chrono::duration<double, std::milli>(end_maximo_paralelo - start_maximo_paralelo).count();
+        std::cout << tiempo_maximo_paralelo << std::endl;
     }
 
     return 0;

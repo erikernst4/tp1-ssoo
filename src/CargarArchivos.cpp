@@ -23,17 +23,19 @@ int cargarArchivo(
         std::cerr << "Error al abrir el archivo '" << filePath << "'" << std::endl;
         return -1;
     }
+    
     while (file >> palabraActual) {
-        // Completar (Ejercicio 4)
         hashMap.incrementar(palabraActual);
         cant++;
     }
     // Cierro el archivo.
+    
     if (!file.eof()) {
         std::cerr << "Error al leer el archivo" << std::endl;
         file.close();
         return -1;
     }
+    
     file.close();
     return cant;
 }
