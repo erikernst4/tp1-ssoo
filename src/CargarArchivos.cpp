@@ -51,12 +51,12 @@ void cargarMultiplesArchivos(
     std::atomic<unsigned int> proximoArchivo(0);
     
     for(unsigned int i = 0; i < cantThreads; i++){
-        std::thread t(cargarMultiplesArchivosAux,std::ref(hashMap),std::ref(filePaths),std::ref(proximoArchivo));
-        hilos[i] = &t;
+        hilos[i] = new std::thread(cargarMultiplesArchivosAux,std::ref(hashMap),std::ref(filePaths),std::ref(proximoArchivo));
     }
 
     for(unsigned int i = 0; i < cantThreads; i++){
-        hilos[i]->join();        
+        hilos[i]->join();
+        delete hilos[i];        
     }
 }
 

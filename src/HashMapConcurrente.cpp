@@ -17,6 +17,13 @@ HashMapConcurrente::HashMapConcurrente() {
     }
 }
 
+HashMapConcurrente::~HashMapConcurrente(){
+    for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
+        delete tabla[i];
+        delete _semaforos[i];
+    }
+}
+
 unsigned int HashMapConcurrente::hashIndex(std::string clave) {
     return (unsigned int)(clave[0] - 'a');
 }
@@ -87,12 +94,12 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     std::vector<hashMapPair> maxFila(cantLetras);
 
     for(unsigned int i = 0; i < cant_threads; i++){
-        std::thread t(&HashMapConcurrente::maximoAux,this,std::ref(proximaFila), std::ref(maxFila));
-        hilos[i] = &t;
+        hilos[i] = new std::thread(&HashMapConcurrente::maximoAux,this,std::ref(proximaFila), std::ref(maxFila));
     }
 
     for(unsigned int i = 0; i < cant_threads; i++){
-        hilos[i]->join();        
+        hilos[i]->join();
+        delete hilos[i];        
     }
 
     hashMapPair res = maxFila[0];
