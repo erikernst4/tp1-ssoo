@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     cargarMultiplesArchivos(hashMap, cantThreads, filePaths);
     auto end_multiples_archivos = std::chrono::steady_clock::now();
     double tiempo_multiples_archivos = std::chrono::duration<double, std::milli>(end_multiples_archivos -  start_multiples_archivos).count();
-    std::clog << tiempo_multiples_archivos << std::endl;
+    std::cout << tiempo_multiples_archivos << std::endl;
     if(hacerMaximo == "true"){
         auto start_maximo_paralelo = std::chrono::steady_clock::now();
         auto maximo = hashMap.maximoParalelo(cantThreads);
