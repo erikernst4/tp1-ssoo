@@ -47,7 +47,7 @@ void cargarMultiplesArchivos(
     std::vector<std::string> filePaths
 ) {
     // Completar (Ejercicio 4)
-    if(cantThreads > filePaths.size())throw("invalid input");
+    //if(cantThreads > filePaths.size())throw("invalid input");
 
     std::thread* hilos[cantThreads];
     std::atomic<unsigned int> proximoArchivo(0);
